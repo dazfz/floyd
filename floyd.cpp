@@ -3,14 +3,15 @@
 #include <chrono>
 #include <iomanip>
 #include <immintrin.h>
+#include <fstream>
 
 using namespace std;
 
-typedef vector<int> vi;
-typedef vector<vector<int>> vii;
-const int INF = 1000000;
+typedef vector<float> vf;
+typedef vector<vector<float>> vff;
+const float INF = 1000000;
 
-void print(const vii &dist)
+void print(const vff &dist)
 {
     int V = dist.size();
     cout << "dist: " << endl;
@@ -22,51 +23,48 @@ void print(const vii &dist)
     }
 }
 
-void floyd(const vii &grafo)
+vff floyd(const vff &grafo)
 {
     int V = grafo.size();
-    vii dist(grafo);
+    vff dist(grafo);
 
     for (int k = 0; k < V; k++)
         for (int i = 0; i < V; i++)
             for (int j = 0; j < V; j++)
                 // si dist de: i->k->j < i->j
-                if (dist[i][j] > dist[i][k] + dist[k][j])
-                    dist[i][j] = dist[i][k] + dist[k][j];
-    print(dist);
+                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+    // print(dist);
+    return dist;
 }
 
-void floydVec(const vii &grafo)
+vff floydVec(const vff &grafo)
 {
     int V = grafo.size();
-    vii dist(grafo);
+    vff dist(grafo);
 
     for (int k = 0; k < V; k++)
     {
         for (int i = 0; i < V; i++)
         {
             // Crear vector que almacena 8 veces dist[i][k]
-            __m256i ik = _mm256_set1_epi32(dist[i][k]);
+            __m256 ik = _mm256_set1_ps(dist[i][k]);
             // ir de 8 en 8
             for (int j = 0; j < V - 7; j += 8)
             {
                 // Casting, y luego carga la fila (de 8 elementos) al vector simd
                 // Cargar fila k, dist[k][j] (de 8 en 8)
-                __m256i kj = _mm256_loadu_si256((__m256i *)&dist[k][j]);
+                __m256 kj = _mm256_loadu_ps(&dist[k][j]);
                 // Cargar fila i, dist[i][j] (de 8 en 8)
-                __m256i ij = _mm256_loadu_si256((__m256i *)&dist[i][j]);
+                __m256 ij = _mm256_loadu_ps(&dist[i][j]);
 
                 // Calcular dist[i][k] + dist[k][j]
-                __m256i sum = _mm256_add_epi32(ik, kj);
+                __m256 ikj = _mm256_add_ps(ik, kj);
 
-                // Comparar dist[i][j] > dist[i][k] + dist[k][j], y guarda true/false
-                __m256i cmp = _mm256_cmpgt_epi32(ij, sum);
-
-                // Mascara cmp, contiene 1 o 0 y decide si va ij o sum
-                __m256i result = _mm256_blendv_epi8(ij, sum, cmp);
+                // Obtener el mínimo entre dist[i][j] y dist[i][k] + dist[k][j]
+                __m256 result = _mm256_min_ps(ij, ikj);
 
                 // Almacenar los resultados de vuelta en la matriz
-                _mm256_storeu_si256((__m256i *)&dist[i][j], result);
+                _mm256_storeu_ps(&dist[i][j], result);
             }
 
             // Elementos restantes, secuencial
@@ -75,40 +73,50 @@ void floydVec(const vii &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
         }
     }
-    print(dist);
+    return dist;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc != 2)
+    {
+        cout << "Uso: programa <nombre_archivo>" << endl;
+        return 1;
+    }
+    string s = argv[1];
+    ifstream archivo(s);
     int V, E;
-    cout << "v,e: ";
-    cin >> V >> E;
+    archivo >> V >> E;
 
-    vii grafo(V, vi(V, INF));
+    vff grafo(V, vf(V, INF));
     for (int i = 0; i < V; i++)
         grafo[i][i] = 0;
 
-    cout << "i,j,w:" << endl;
     for (int i = 0; i < E; i++)
     {
-        int u, v, w;
-        cin >> u >> v >> w;
-        grafo[u][v] = w;
+        int u, v;
+        float w;
+        archivo >> u >> v >> w;
+        grafo[u - 1][v - 1] = w;
     }
+    archivo.close();
 
-    auto start = std::chrono::high_resolution_clock::now();
-    floyd(grafo);
-    auto finish = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-    std::cout << "Normal: " << duration << " [ms]" << std::endl;
+    auto start = chrono::high_resolution_clock::now();
+    vff dist1 = floyd(grafo);
+    auto finish = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    cout << "Normal: " << duration << " [ms]" << endl;
 
-    start = std::chrono::high_resolution_clock::now();
-    floydVec(grafo);
-    finish = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
-    std::cout << "Vectorizado: " << duration << " [ms]" << std::endl;
-    // nota, si estima necesario puede usar milliseconds
-    // en lugar de nanoseconds
+    start = chrono::high_resolution_clock::now();
+    vff dist2 = floydVec(grafo);
+    finish = chrono::high_resolution_clock::now();
+    duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    cout << "Vectorizado: " << duration << " [ms]" << endl;
+
+    if (dist1 == dist2)
+        cout << "Las funciones dieron el mismo resultado." << endl;
+    else
+        cout << "Las funciones dieron resultados diferentes." << endl;
 
     return 0;
 }
