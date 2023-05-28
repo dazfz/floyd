@@ -1,9 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include <chrono>
 #include <iomanip>
 #include <immintrin.h>
-#include <fstream>
+#include <omp.h>
 
 using namespace std;
 
@@ -21,6 +22,29 @@ void print(const vff &dist)
             dist[i][j] == INF ? cout << setw(3) << "INF " : cout << setw(3) << dist[i][j] << " ";
         cout << endl;
     }
+}
+
+void iguales(const vff &dist1, const vff &dist2)
+{
+    int V = dist1.size();
+    bool matricesIguales = true;
+    for (int i = 0; i < V; i++)
+    {
+        for (int j = 0; j < V; j++)
+        {
+            if (dist1[i][j] != dist2[i][j])
+            {
+                matricesIguales = false;
+                break;
+            }
+        }
+        if (!matricesIguales)
+            break;
+    }
+    if (matricesIguales)
+        cout << "iguales" << endl;
+    else
+        cout << "distintas" << endl;
 }
 
 vff floyd(const vff &grafo)
@@ -51,7 +75,7 @@ vff floydVec(const vff &grafo)
             // ir de 8 en 8
             for (int j = 0; j < V - 7; j += 8)
             {
-                // Casting, y luego carga la fila (de 8 elementos) al vector simd
+                // cargar la fila (de 8 elementos) al vector simd
                 // Cargar fila k, dist[k][j] (de 8 en 8)
                 __m256 kj = _mm256_loadu_ps(&dist[k][j]);
                 // Cargar fila i, dist[i][j] (de 8 en 8)
@@ -63,7 +87,7 @@ vff floydVec(const vff &grafo)
                 // Obtener el mínimo entre dist[i][j] y dist[i][k] + dist[k][j]
                 __m256 result = _mm256_min_ps(ij, ikj);
 
-                // Almacenar los resultados de vuelta en la matriz
+                // Almacenar los resultados de vuelta en la dist
                 _mm256_storeu_ps(&dist[i][j], result);
             }
 
@@ -73,6 +97,79 @@ vff floydVec(const vff &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
         }
     }
+    return dist;
+}
+
+vff floydVec16(const vff &grafo)
+{
+    int V = grafo.size();
+    vff dist(grafo);
+
+    for (int k = 0; k < V; k++)
+    {
+        for (int i = 0; i < V; i++)
+        {
+            __m512 ik = _mm512_set1_ps(dist[i][k]);
+            for (int j = 0; j < V - 15; j += 16)
+            {
+                __m512 kj = _mm512_loadu_ps(&dist[k][j]);
+                __m512 ij = _mm512_loadu_ps(&dist[i][j]);
+                __m512 ikj = _mm512_add_ps(ik, kj);
+                __m512 result = _mm512_min_ps(ij, ikj);
+                _mm512_storeu_ps(&dist[i][j], result);
+            }
+            for (int j = V - V % 16; j < V; j++)
+                if (dist[i][j] > dist[i][k] + dist[k][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
+        }
+    }
+    return dist;
+}
+
+vff floydOpenMP(const vff &grafo)
+{
+    int V = grafo.size();
+    vff dist(grafo);
+
+    int i, j, k;
+    for (k = 0; k < V; k++)
+    {
+#pragma omp parallel for private(i, j) schedule(static)
+        for (i = 0; i < V; i++)
+            for (j = 0; j < V; j++)
+                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+    }
+
+    return dist;
+}
+
+vff floydVec8Par(const vff &grafo)
+{
+    int V = grafo.size();
+    vff dist(grafo);
+
+    for (int k = 0; k < V; k++)
+    {
+#pragma omp parallel for
+        for (int i = 0; i < V; i++)
+        {
+            __m256 ik = _mm256_set1_ps(dist[i][k]);
+            for (int j = 0; j < V - 7; j += 8)
+            {
+                __m256 kj = _mm256_loadu_ps(&dist[k][j]);
+                __m256 ij = _mm256_loadu_ps(&dist[i][j]);
+
+                __m256 ikj = _mm256_add_ps(ik, kj);
+                __m256 result = _mm256_min_ps(ij, ikj);
+
+                _mm256_storeu_ps(&dist[i][j], result);
+            }
+            for (int j = V - V % 8; j < V; j++)
+                if (dist[i][j] > dist[i][k] + dist[k][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
+        }
+    }
+
     return dist;
 }
 
@@ -111,12 +208,30 @@ int main(int argc, char *argv[])
     vff dist2 = floydVec(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
-    cout << "Vectorizado: " << duration << " [ms]" << endl;
+    cout << "Vectorizado8: " << duration << " [ms]" << endl;
 
-    if (dist1 == dist2)
-        cout << "Las funciones dieron el mismo resultado." << endl;
-    else
-        cout << "Las funciones dieron resultados diferentes." << endl;
+    start = chrono::high_resolution_clock::now();
+    vff dist3 = floydVec16(grafo);
+    finish = chrono::high_resolution_clock::now();
+    duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    cout << "Vectorizado16: " << duration << " [ms]" << endl;
+
+    start = chrono::high_resolution_clock::now();
+    vff dist4 = floydOpenMP(grafo);
+    finish = chrono::high_resolution_clock::now();
+    duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    cout << "Paralelizado OpenMP: " << duration << " [ms]" << endl;
+
+    start = chrono::high_resolution_clock::now();
+    vff dist5 = floydVec8Par(grafo);
+    finish = chrono::high_resolution_clock::now();
+    duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    cout << "Vectorizado + Paralelizado OpenMP: " << duration << " [ms]" << endl;
+
+    iguales(dist1, dist2);
+    iguales(dist1, dist3);
+    iguales(dist1, dist4);
+    iguales(dist1, dist5);
 
     return 0;
 }
