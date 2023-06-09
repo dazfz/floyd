@@ -2,9 +2,9 @@
 #include <vector>
 #include <fstream>
 #include <chrono>
-#include <iomanip>
-#include <immintrin.h>
-#include <omp.h>
+#include <iomanip>     // setear el espacio del print
+#include <immintrin.h> // SIMD
+#include <omp.h>       // OpenMP
 
 using namespace std;
 
@@ -27,21 +27,21 @@ void print(const vff &dist)
 void iguales(const vff &dist1, const vff &dist2)
 {
     int V = dist1.size();
-    bool matricesIguales = true;
+    bool f = true;
     for (int i = 0; i < V; i++)
     {
         for (int j = 0; j < V; j++)
         {
             if (dist1[i][j] != dist2[i][j])
             {
-                matricesIguales = false;
+                f = false;
                 break;
             }
         }
-        if (!matricesIguales)
+        if (!f)
             break;
     }
-    if (matricesIguales)
+    if (f)
         cout << "iguales" << endl;
     else
         cout << "distintas" << endl;
@@ -71,27 +71,24 @@ vff floydVec(const vff &grafo)
         for (int i = 0; i < V; i++)
         {
             // Crear vector que almacena 8 veces dist[i][k]
+            // (para despues comparar con otro vector)
             __m256 ik = _mm256_set1_ps(dist[i][k]);
-            // ir de 8 en 8
-            for (int j = 0; j < V - 7; j += 8)
+            for (int j = 0; j < V - 7; j += 8) // ir de 8 en 8
             {
-                // cargar la fila (de 8 elementos) al vector simd
+                // Cargar filas (de 8 elementos: j, j+1,..., j+7) al vector SIMD
+
                 // Cargar fila k, dist[k][j] (de 8 en 8)
                 __m256 kj = _mm256_loadu_ps(&dist[k][j]);
                 // Cargar fila i, dist[i][j] (de 8 en 8)
                 __m256 ij = _mm256_loadu_ps(&dist[i][j]);
-
-                // Calcular dist[i][k] + dist[k][j]
+                // Calcular dist[i][k] + dist[k][j] (fila de 8 elementos)
                 __m256 ikj = _mm256_add_ps(ik, kj);
-
-                // Obtener el mínimo entre dist[i][j] y dist[i][k] + dist[k][j]
+                // Minimo entre dist[i][j] y dist[i][k] + dist[k][j]
                 __m256 result = _mm256_min_ps(ij, ikj);
-
-                // Almacenar los resultados de vuelta en la dist
+                // Almacenar los resultados de vuelta en dist
                 _mm256_storeu_ps(&dist[i][j], result);
             }
-
-            // Elementos restantes, secuencial
+            // Elementos restantes: secuencial
             for (int j = V - V % 8; j < V; j++)
                 if (dist[i][j] > dist[i][k] + dist[k][j])
                     dist[i][j] = dist[i][k] + dist[k][j];
