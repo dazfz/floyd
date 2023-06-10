@@ -47,7 +47,7 @@ void iguales(const vff &dist1, const vff &dist2)
         cout << "distintas" << endl;
 }
 
-vff floyd(const vff &grafo)
+void floyd(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
@@ -58,10 +58,10 @@ vff floyd(const vff &grafo)
                 // si dist de: i->k->j < i->j
                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
     // print(dist);
-    return dist;
+    //return dist;
 }
 
-vff floydVec(const vff &grafo)
+void floydVec(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
@@ -94,10 +94,10 @@ vff floydVec(const vff &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
         }
     }
-    return dist;
+    //return dist;
 }
 
-vff floydVec16(const vff &grafo)
+void floydVec16(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
@@ -120,10 +120,10 @@ vff floydVec16(const vff &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
         }
     }
-    return dist;
+    //return dist;
 }
 
-vff floydOpenMP(const vff &grafo)
+void floydOpenMP(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
@@ -137,10 +137,10 @@ vff floydOpenMP(const vff &grafo)
                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
     }
 
-    return dist;
+    //return dist;
 }
 
-vff floydVec8Par(const vff &grafo)
+void floydVec8Par(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
@@ -167,7 +167,7 @@ vff floydVec8Par(const vff &grafo)
         }
     }
 
-    return dist;
+    //return dist;
 }
 
 int main(int argc, char *argv[])
@@ -196,39 +196,44 @@ int main(int argc, char *argv[])
     archivo.close();
 
     auto start = chrono::high_resolution_clock::now();
-    vff dist1 = floyd(grafo);
+    //vff dist1 = 
+    floyd(grafo);
     auto finish = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Normal: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    vff dist2 = floydVec(grafo);
+    //vff dist2 = 
+    floydVec(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado8: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    vff dist3 = floydVec16(grafo);
+    //vff dist3 = 
+    floydVec16(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado16: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    vff dist4 = floydOpenMP(grafo);
+    //vff dist4 = 
+    floydOpenMP(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Paralelizado OpenMP: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    vff dist5 = floydVec8Par(grafo);
+    //vff dist5 = 
+    floydVec8Par(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado + Paralelizado OpenMP: " << duration << " [ms]" << endl;
 
-    iguales(dist1, dist2);
-    iguales(dist1, dist3);
-    iguales(dist1, dist4);
-    iguales(dist1, dist5);
+    // iguales(dist1, dist2);
+    // iguales(dist1, dist3);
+    // iguales(dist1, dist4);
+    // iguales(dist1, dist5);
 
     return 0;
 }
