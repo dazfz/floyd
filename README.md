@@ -9,7 +9,7 @@ Este es un programa que implementa el algoritmo de Floyd-Warshall para encontrar
 Para compilar:
 
 ```
-g++ floyd.cpp -O3 -march=native -fopenmp 
+g++ floyd.cpp -march=native -fopenmp 
 ```
 
 ## Ejecución
@@ -22,7 +22,7 @@ Para ejecutar:
 Ejemplo:
 
 ```
-./a.exe 64.txt
+./a.out 8.mtx
 ```
 El archivo de entrada debe tener un formato específico. El primer número en el archivo debe ser el número de vértices del grafo (V), seguido del número de aristas (E). A continuación, cada línea debe contener tres números separados por espacios: el vértice de origen de la arista, el vértice de destino y el peso de la arista. Los vértices deben ser mayor a 0.  Por ejemplo:
 
