@@ -22,25 +22,20 @@ Para ejecutar:
 Ejemplo:
 
 ```
-./a.out 8.mtx
+./a.out 4.mtx
 ```
 El archivo de entrada debe tener un formato específico. El primer número en el archivo debe ser el número de vértices del grafo (V), seguido del número de aristas (E). A continuación, cada línea debe contener tres números separados por espacios: el vértice de origen de la arista, el vértice de destino y el peso de la arista. Los vértices deben ser mayor a 0.  Por ejemplo:
 
 ```
-8 11
-1 2 6
-3 2 6
-3 5 1
-3 6 8
-4 2 3
-4 8 8
-5 3 5
-5 8 4
-6 7 9
-7 5 5
-7 8 9
+4 5
+
+1 3 -2
+2 1 4
+4 2 -1
+2 3 3
+3 4 2
 ```
 
 ## Resultados
 
-Una vez que el programa haya finalizado la ejecución, mostrará los tiempos de ejecución de las diferentes versiones del algoritmo implementadas. 
+Una vez que el programa haya finalizado la ejecución, mostrará los tiempos de ejecución de las diferentes versiones del algoritmo implementadas. Si se agrega el argumento ``` -p``` al ejecutar el programa, se imprimirá las 2 matrices, inicial y resuelta.

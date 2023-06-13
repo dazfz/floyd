@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <cstring> // strcmp
 #include <chrono>
 #include <iomanip>     // setear el espacio del print
 #include <immintrin.h> // SIMD
@@ -47,7 +48,7 @@ void iguales(const vff &dist1, const vff &dist2)
         cout << "distintas" << endl;
 }
 
-void floyd(const vff &grafo)
+vff floyd(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
@@ -57,8 +58,7 @@ void floyd(const vff &grafo)
             for (int j = 0; j < V; j++)
                 // si dist de: i->k->j < i->j
                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
-    // print(dist);
-    //return dist;
+    return dist;
 }
 
 void floydVec(const vff &grafo)
@@ -94,7 +94,7 @@ void floydVec(const vff &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
         }
     }
-    //return dist;
+    // return dist;
 }
 
 void floydVec16(const vff &grafo)
@@ -120,7 +120,7 @@ void floydVec16(const vff &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
         }
     }
-    //return dist;
+    // return dist;
 }
 
 void floydOpenMP(const vff &grafo)
@@ -137,7 +137,7 @@ void floydOpenMP(const vff &grafo)
                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
     }
 
-    //return dist;
+    // return dist;
 }
 
 void floydVec8Par(const vff &grafo)
@@ -167,12 +167,12 @@ void floydVec8Par(const vff &grafo)
         }
     }
 
-    //return dist;
+    // return dist;
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    if (argc < 2)
     {
         cout << "Uso: programa <nombre_archivo>" << endl;
         return 1;
@@ -195,36 +195,42 @@ int main(int argc, char *argv[])
     }
     archivo.close();
 
+    if (argc == 3 && (strcmp(argv[2], "-p") == 0 || strcmp(argv[1], "-p") == 0))
+        print(grafo);
+
     auto start = chrono::high_resolution_clock::now();
-    //vff dist1 = 
-    floyd(grafo);
+    vff dist1 = floyd(grafo);
     auto finish = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    if (argc == 3 && strcmp(argv[2], "-p") == 0)
+        print(dist1);
+    dist1.clear();
+    dist1.resize(0);
     cout << "Normal: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    //vff dist2 = 
+    // vff dist2 =
     floydVec(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado8: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    //vff dist3 = 
+    // vff dist3 =
     floydVec16(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado16: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    //vff dist4 = 
+    // vff dist4 =
     floydOpenMP(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Paralelizado OpenMP: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    //vff dist5 = 
+    // vff dist5 =
     floydVec8Par(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
@@ -254,31 +260,31 @@ int main(int argc, char *argv[])
 3 1 0 5
 5 3 2 0
 
-4,5
+4 5
 
-0 2 -2
-1 0 4
-3 1 -1
-1 2 3
-2 3 2
+1 3 -2
+2 1 4
+4 2 -1
+2 3 3
+3 4 2
 
 0 -1 -2 0
 4 0 2 4
 5 1 0 2
 3 -1 1 0
 
-8, 11
-0 1 6
-2 1 6
-2 4 1
-2 5 8
-3 1 3
-3 7 8
-4 2 5
-4 7 4
-5 6 9
-6 4 5
+8 11
+1 2 6
+3 2 6
+3 5 1
+3 6 8
+4 2 3
+4 8 8
+5 3 5
+5 8 4
 6 7 9
+7 5 5
+7 8 9
 
   0   6 INF INF INF INF INF INF
 INF   0 INF INF INF INF INF INF
