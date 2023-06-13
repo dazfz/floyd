@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Este es un programa que implementa el algoritmo de Floyd-Warshall para encontrar los caminos más cortos en un grafo con pesos. El programa está escrito en C++ y utiliza distintas técnicas de paralelización: vectorización, OpenMP y (proximamente) CUDA.
+Programa que implementa el algoritmo de Floyd-Warshall para encontrar los caminos más cortos en un grafo con pesos. El programa está escrito en C++ y utiliza distintas técnicas de paralelización: vectorización, OpenMP y CUDA.
 
 ## Compilación
 
@@ -38,4 +38,4 @@ El archivo de entrada debe tener un formato específico. El primer número en el
 
 ## Resultados
 
-Una vez que el programa haya finalizado la ejecución, mostrará los tiempos de ejecución de las diferentes versiones del algoritmo implementadas. Si se agrega el argumento ``` -p``` al ejecutar el programa, se imprimirá las 2 matrices, inicial y resuelta.
+Una vez que el programa haya finalizado la ejecución, mostrará los tiempos de ejecución de las diferentes versiones del algoritmo implementadas. Si se agrega el argumento ```-p``` al ejecutar el programa, se imprimirá las 2 matrices, inicial y resuelta.
