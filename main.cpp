@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     // iguales(dist1, dist3);
     // iguales(dist1, dist4);
     // iguales(dist1, dist5);
-    if (argc == 3 && (strcmp(argv[2], "-p") == 0 || strcmp(argv[1], "-p") == 0))
+    if (argc == 3 && strcmp(argv[2], "-p") == 0)
         reconstruction(grafo);
     return 0;
 }

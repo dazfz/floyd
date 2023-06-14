@@ -77,6 +77,7 @@ vff reconstruction(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
+    
     vff prev(V, vf(V, -INF));
     for (int i = 0; i < V; i++)
         for (int j = 0; j < V; j++)
