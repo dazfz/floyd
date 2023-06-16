@@ -27,6 +27,6 @@ plt.xlabel("n")
 plt.ylabel("Tiempo (segundos)")
 plt.title("Tiempo de ejecución")
 plt.legend()
-plt.grid(True, which='major', axis='y')
+plt.grid(True, which="major", axis="y")
 
 plt.savefig("grafico.png")
