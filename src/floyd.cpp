@@ -2,7 +2,6 @@
 #include <vector>
 #include <immintrin.h> // SIMD
 #include <omp.h>       // OpenMP
-
 using namespace std;
 
 typedef vector<float> vf;
