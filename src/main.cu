@@ -36,37 +36,20 @@ int main(int argc, char *argv[])
     }
     archivo.close();
 
-   auto start = chrono::high_resolution_clock::now();
-    vff dist2 = naiveCUDA(grafo);
-  auto  finish = chrono::high_resolution_clock::now();
-  auto  duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
-    cout << "Cuda Naive: " << duration << " [ms]" << endl;
+    auto start = chrono::high_resolution_clock::now();
+    vff dist1 = floyd(grafo);
+    auto finish = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+    cout << "Normal: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
-    vff lol = xdd(grafo);
+    vff dist2 = CUDA(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
-    cout << "Cuda xd: " << duration << " [ms]" << endl;
+    cout << "CUDA: " << duration << " [ms]" << endl;
 
-    start = chrono::high_resolution_clock::now();
-    //vff dist4 = CUDA1(grafo);
-    finish = chrono::high_resolution_clock::now();
-    duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
-    cout << "Cuda: " << duration << " [ms]" << endl;
+    //iguales(dist1, dist2);
 
-    start = chrono::high_resolution_clock::now();
-    //vff dist5 = CUDA2(grafo);
-    finish = chrono::high_resolution_clock::now();
-    duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
-    cout << "Cuda: " << duration << " [ms]" << endl;
-
-    // print(dist4);
-    //  iguales(dist1, dist2);
-    //  iguales(dist1, dist3);
-    //  iguales(dist1, dist4);
-    iguales(dist2, lol);
-    //iguales(dist2, dist4);
-    //iguales(dist2, dist5);
     if (argc == 3 && strcmp(argv[2], "-p") == 0)
         reconstruction(grafo);
     return 0;
