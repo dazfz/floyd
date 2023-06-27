@@ -28,14 +28,13 @@ __global__ void floydKernel(float *dist, int V, int k)
     int j = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Memoria compartida
-    __shared__ float ik[32];
-    __shared__ float kj[32];
+    __shared__ float ik[32], kj[32];
 
     // Como la matriz ahora es de una dimension
     // La fila i, se calcula como i * V (V elementos en 1 fila)
     // Luego, sumar indice de la columna (desplazamiento)
     if (i < V && j < V)
-    {   
+    {
         // Si es la primera columna
         if (!threadIdx.x)
             ik[threadIdx.y] = dist[i * V + k];
@@ -44,11 +43,8 @@ __global__ void floydKernel(float *dist, int V, int k)
             kj[threadIdx.x] = dist[k * V + j];
         __syncthreads();
 
-        float ij = dist[i * V + j];
         float ikj = ik[threadIdx.y] + kj[threadIdx.x];
-        ij = fminf(ij, ikj);
-
-        dist[i * V + j] = ij;
+        dist[i * V + j] = fminf(dist[i * V + j], ikj);
     }
 }
 
