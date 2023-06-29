@@ -1,9 +1,6 @@
 ./a.exe 4.mtx -p
 Normal: 0 [ms]
-Vectorizado8: 0 [ms]
-Vectorizado16: 0 [ms]
-Paralelizado OpenMP: 2 [ms]
-Vectorizado + Paralelizado OpenMP: 0 [ms]
+CUDA: 0 [ms]
 
 dist:
      1   2   3   4

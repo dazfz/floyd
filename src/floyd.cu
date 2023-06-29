@@ -66,7 +66,7 @@ vff CUDA(const vff &grafo)
     dim3 block(B, B);
     dim3 grid((V + B - 1) / B, (V + B - 1) / B);
 
-    // Para cada k, se recorre paralelamente todos los bloques del grid, y se ejecuta el kernel FW
+    // Para cada k, se recorre todos los bloques del grid, y se ejecuta el kernel FW
     for (int k = 0; k < V; k++)
         floydKernel<<<grid, block>>>(thrust::raw_pointer_cast(device.data()), V, k);
 
