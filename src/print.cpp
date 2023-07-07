@@ -6,9 +6,11 @@ using namespace std;
 
 typedef vector<float> vf;
 typedef vector<vector<float>> vff;
+typedef vector<double> vd;
+typedef vector<vector<double>> vdd;
 const float INF = 1000000;
 
-void print(const vff &dist)
+void print(const vdd &dist)
 {
     int V = dist.size();
 
@@ -34,7 +36,7 @@ void print(const vff &dist)
     }
 }
 
-void iguales(const vff &dist1, const vff &dist2)
+void iguales(const vdd &dist1, const vdd &dist2)
 {
     int V = dist1.size();
     bool f = true;
@@ -44,12 +46,12 @@ void iguales(const vff &dist1, const vff &dist2)
         {
             if (dist1[i][j] != dist2[i][j])
             {
+                // cout << dist1[i][j] << " " << dist2[i][j] << endl;
+                // cout << fabs(dist1[i][j] - dist2[i][j]) << " "<< i <<j<< endl;
                 f = false;
                 break;
             }
         }
-        if (!f)
-            break;
     }
     if (f)
         cout << "iguales" << endl;
@@ -77,7 +79,7 @@ vff reconstruction(const vff &grafo)
 {
     int V = grafo.size();
     vff dist(grafo);
-    
+
     vff prev(V, vf(V, -INF));
     for (int i = 0; i < V; i++)
         for (int j = 0; j < V; j++)
@@ -94,8 +96,8 @@ vff reconstruction(const vff &grafo)
                     dist[i][j] = dist[i][k] + dist[k][j];
                     prev[i][j] = prev[k][j];
                 }
-    print(grafo);
-    print(dist);
+    // print(grafo);
+    // print(dist);
 
     while (1)
     {
