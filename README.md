@@ -30,7 +30,7 @@ nvcc main.cu
 
 ## Ejecución
 
-Para ejecutar sin imprimir las matrices, solo tiempo:
+Para ejecutar:
 
 ```
 ./programa <nombre_archivo>

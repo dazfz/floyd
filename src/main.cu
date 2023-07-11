@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     archivo.close();
 
     auto start = chrono::high_resolution_clock::now();
-    // vff dist1 = floyd(grafo);
+    vff dist1 = floyd(grafo);
     auto finish = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Normal: " << duration << " [ms]" << endl;

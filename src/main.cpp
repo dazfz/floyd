@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     int V, E;
     archivo >> V >> E;
 
-    vdd grafo(V, vd(V, INF));
+    vff grafo(V, vf(V, INF));
     for (int i = 0; i < V; i++)
         grafo[i][i] = 0;
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     archivo.close();
 
     auto start = chrono::high_resolution_clock::now();
-    vdd dist1 =
+    vff dist1 =
         floyd(grafo);
     auto finish = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
@@ -47,35 +47,40 @@ int main(int argc, char *argv[])
 
     start = chrono::high_resolution_clock::now();
     // vff dist2 =
-    // floydVec(grafo);
+    floydVec(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado8: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
     // vff dist3 =
-    // floydVec16(grafo);
+    floydVec16(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado16: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
     // vff dist4 =
-    // floydOpenMP(grafo);
+    floydOpenMP(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Paralelizado OpenMP: " << duration << " [ms]" << endl;
 
     start = chrono::high_resolution_clock::now();
     // vff dist5 =
-    // floydVec8Par(grafo);
+    floydVec8Par(grafo);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Vectorizado + Paralelizado OpenMP: " << duration << " [ms]" << endl;
 
+    vdd grafod(V, vd(V, INF));
+    for (int i = 0; i < V; i++)
+        for (int j = 0; j < V; j++)
+            grafod[i][j] = static_cast<double>(grafo[i][j]);
+
     start = chrono::high_resolution_clock::now();
     vdd dist6 =
-        floydBlock(grafo, 2);
+        floydBlock(grafod, 2);
     finish = chrono::high_resolution_clock::now();
     duration = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
     cout << "Paralelizado en bloques OpenMP: " << duration << " [ms]" << endl;
@@ -84,8 +89,8 @@ int main(int argc, char *argv[])
     // iguales(dist1, dist3);
     // iguales(dist1, dist4);
     // iguales(dist1, dist5);
-    iguales(dist1, dist6);
+    // iguales(dist1, dist6);
     if (argc == 3 && strcmp(argv[2], "-p") == 0)
-        //reconstruction(grafo);
-        return 0;
+        reconstruction(grafo);
+    return 0;
 }

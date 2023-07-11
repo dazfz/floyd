@@ -12,10 +12,10 @@ typedef vector<vector<double>> vdd;
 
 // Floyd Warshall normal
 // Funciona con float o double (cambiar vff por vdd)
-vdd floyd(const vdd &grafo)
+vff floyd(const vff &grafo)
 {
     int V = grafo.size();
-    vdd dist(grafo);
+    vff dist(grafo);
 
     for (int k = 0; k < V; k++)
         for (int i = 0; i < V; i++)
@@ -122,7 +122,7 @@ void floydOpenMP(const vff &grafo)
     // return dist;
 }
 
-// Floyd Warshall paralelizado con OpenMP basico
+// Floyd Warshall paralelizado con OpenMP basico y vectorizacion
 // Funciona con float o double (cambiar vff por vdd)
 void floydVec8Par(const vff &grafo)
 {
@@ -167,39 +167,40 @@ void floydb(vdd &C, const vdd &A, const vdd &B, const int b)
 vdd floydBlock(const vdd &grafo, const int b)
 {
     int V = grafo.size();
-    int B = (V + b - 1) / b; // Numero de bloques redondeado hacia arriba
+    if (V % b != 0)
+    {
+        cout << "Error: Tamaño de grafo V no divisible por tamaño de bloque b" << endl;
+        return grafo;
+    }
+    int B = V / b;
     vdd dist(grafo);
 
     // Crear bloques (submatrices)
     vector<vector<vdd>> blocks(B, vector<vdd>(B, vdd(b, vd(b)))); // Matriz de bloques
-    #pragma omp parallel for
     for (int i = 0; i < B; i++)
         for (int j = 0; j < B; j++)
             for (int ii = 0; ii < b; ii++)
                 for (int jj = 0; jj < b; jj++)
-                        blocks[i][j][ii][jj] = dist[i * b + ii][j * b + jj];
+                    blocks[i][j][ii][jj] = dist[i * b + ii][j * b + jj];
 
     // Recorrer bloques diagonalmente
     for (int k = 0; k < B; k++)
     {
-        // • Dependent phase - processing the kth diagonal block.
         // Calcular FW del bloque actual (que pertenece a la diagonal)
         floydb(blocks[k][k], blocks[k][k], blocks[k][k], b);
 
-        // • Partially dependent phase - processing the kth row and the kth column of blocks.
-        // Calcular FW para la fila entera (todas las columnas de la fila)
-        #pragma omp parallel for
+// Calcular FW para la fila entera (todas las columnas de la fila)
+#pragma omp parallel for
         for (int j = 0; j < B; j++)
             if (j != k)
                 floydb(blocks[k][j], blocks[k][k], blocks[k][j], b);
-        
-        // Calcular FW para la columna entera (todas las filas de la columna)
-        #pragma omp parallel for
+
+// Calcular FW para la columna entera (todas las filas de la columna)
+#pragma omp parallel for
         for (int i = 0; i < B; i++)
         {
             if (i != k)
                 floydb(blocks[i][k], blocks[i][k], blocks[k][k], b);
-            // • Independent phase - processing the remaining blocks.
             // Calcular para las restantes
             for (int j = 0; j < B; j++)
                 if (j != k)
@@ -207,8 +208,7 @@ vdd floydBlock(const vdd &grafo, const int b)
         }
     }
 
-    // Copiar los resultados a la matriz original
-    #pragma omp parallel for
+// Copiar los resultados a la matriz original
     for (int i = 0; i < B; i++)
         for (int j = 0; j < B; j++)
             for (int ii = 0; ii < b; ii++)
