@@ -39,7 +39,6 @@ void floydVec(const vff &grafo)
             // Crear vector que almacena 8 veces dist[i][k]
             // (para despues comparar con otro vector)
             __m256 ik = _mm256_set1_ps(dist[i][k]);
-            //__m256d ik = _mm256_set1_pd(dist[i][k]);
             for (int j = 0; j < V - 7; j += 8) // ir de 8 en 8
             {
                 // Cargar filas (de 8 elementos: j, j+1,..., j+7) al vector SIMD
@@ -54,11 +53,6 @@ void floydVec(const vff &grafo)
                 __m256 result = _mm256_min_ps(ij, ikj);
                 // Almacenar los resultados de vuelta en dist
                 _mm256_storeu_ps(&dist[i][j], result);
-                // __m256d kj = _mm256_loadu_pd(&dist[k][j]);
-                // __m256d ij = _mm256_loadu_pd(&dist[i][j]);
-                // __m256d ikj = _mm256_add_pd(ik, kj);
-                // __m256d result = _mm256_min_pd(ij, ikj);
-                // _mm256_storeu_pd(&dist[i][j], result);
             }
             // Elementos restantes: secuencial
             for (int j = V - V % 8; j < V; j++)
@@ -81,7 +75,6 @@ void floydVec16(const vff &grafo)
         for (int i = 0; i < V; i++)
         {
             __m512 ik = _mm512_set1_ps(dist[i][k]);
-            // __m512d ik = _mm512_set1_pd(dist[i][k]);
             for (int j = 0; j < V - 15; j += 16)
             {
                 __m512 kj = _mm512_loadu_ps(&dist[k][j]);
@@ -89,11 +82,6 @@ void floydVec16(const vff &grafo)
                 __m512 ikj = _mm512_add_ps(ik, kj);
                 __m512 result = _mm512_min_ps(ij, ikj);
                 _mm512_storeu_ps(&dist[i][j], result);
-                // __m512d kj = _mm512_loadu_pd(&dist[k][j]);
-                // __m512d ij = _mm512_loadu_pd(&dist[i][j]);
-                // __m512d ikj = _mm512_add_pd(ik, kj);
-                // __m512d result = _mm512_min_pd(ij, ikj);
-                // _mm512_storeu_pd(&dist[i][j], result);
             }
             for (int j = V - V % 16; j < V; j++)
                 if (dist[i][j] > dist[i][k] + dist[k][j])
@@ -183,7 +171,7 @@ vdd floydBlock(const vdd &grafo, const int b)
                 for (int jj = 0; jj < b; jj++)
                     blocks[i][j][ii][jj] = dist[i * b + ii][j * b + jj];
 
-    // Recorrer bloques diagonalmente
+    // Recorrer los bloques de la diagonal
     for (int k = 0; k < B; k++)
     {
         // Calcular FW del bloque actual (que pertenece a la diagonal)
@@ -208,7 +196,7 @@ vdd floydBlock(const vdd &grafo, const int b)
         }
     }
 
-// Copiar los resultados a la matriz original
+    // Copiar los resultados a la matriz original
     for (int i = 0; i < B; i++)
         for (int j = 0; j < B; j++)
             for (int ii = 0; ii < b; ii++)
