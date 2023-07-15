@@ -16,7 +16,7 @@ El programa tiene 5 archivos principales:
 
 ## Compilación
 
-Para compilar no CUDA `.cpp`:
+Para compilar vectorización y OpenMP (no CUDA) `.cpp`:
 
 ```
 g++ main.cpp -march=native -fopenmp
