@@ -16,7 +16,7 @@ o
 
     ./programa <nombre_archivo> -p
 
-La opción `-p` indica que se desea imprimir las matrices.
+La opción `-p` imprime las matrices.
 
 Ejemplo:
 

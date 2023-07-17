@@ -14,6 +14,12 @@ El programa tiene 5 archivos principales:
 - `main.cu`: Igual que `main.cpp`, pero con la diferencia que ejecuta solo CUDA.
 - `floyd.cu`: Función que implementa la paralelización del algoritmo Floyd-Warshall en CUDA.
 
+## Requisitos
+
+- Compilador `g++`
+- Procesador que soporte operaciones `SIMD` 512
+- GPU y `NVIDIA CUDA Toolkit` instalado
+
 ## Compilación
 
 Para compilar vectorización y OpenMP (no CUDA) `.cpp`:
